@@ -1,0 +1,310 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockGuard | Inventory Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-icon">S</span>
+            <span>StockGuard</span>
+        </a>
+        <span class="topbar-label">INVENTORY MANAGEMENT</span>
+    </header>
+
+    <main class="container">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">OVERVIEW</p>
+                <h1>Inventory Dashboard</h1>
+                <p class="subtitle">
+                    Monitor stock levels and identify products that need attention.
+                </p>
+            </div>
+            <span class="live-indicator">● Dashboard active</span>
+        </section>
+
+{% if alert_products %}
+<section class="alerts-panel" aria-labelledby="alerts-title">
+    <div class="alerts-heading">
+        <div>
+            <h2 id="alerts-title">Stock alerts</h2>
+            <p>These products need your attention.</p>
+        </div>
+
+        <span class="alerts-count">
+            {{ alert_products|length }} requiring attention
+        </span>
+    </div>
+
+    <div class="alerts-list">
+        {% for product in alert_products %}
+        <article class="alert-item {% if product.status == 'Out of Stock' %}critical-alert{% else %}warning-alert{% endif %}">
+            <div class="alert-product-info">
+                <strong>{{ product.name }}</strong>
+                <span>{{ product.category }}</span>
+            </div>
+
+            <div class="alert-details">
+                <span>{{ product.quantity }} units remaining</span>
+                <span>Reorder level: {{ product.reorder_level }}</span>
+            </div>
+
+            <div class="alert-actions">
+                <span class="alert-status">
+                    {{ product.status }}
+                </span>
+                <span class="alert-restock">
+                    Restock {{ product.suggested_restock }} units
+                </span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="alerts-panel alerts-clear">
+    <h2>All stock levels healthy</h2>
+    <p>No products currently require replenishment.</p>
+</section>
+{% endif %}
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <p>Total products</p>
+                <h2>{{ total_products }}</h2>
+                <span class="stat-note">Products being tracked</span>
+            </article>
+
+            <article class="stat-card warning-card">
+                <p>Low stock</p>
+                <h2>{{ low_stock_count }}</h2>
+                <span class="stat-note">Require replenishment</span>
+            </article>
+
+            <article class="stat-card danger-card">
+                <p>Out of stock</p>
+                <h2>{{ out_of_stock_count }}</h2>
+                <span class="stat-note">Currently unavailable</span>
+            </article>
+        </section>
+
+        <section class="inventory-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Inventory</h2>
+                    <p>Review quantities and reorder thresholds.</p>
+                </div>
+                <span class="item-count">{{ total_products }} items</span>
+            </div>
+
+<div class="add-product-panel">
+    <h3>Add a product</h3>
+    <p>Enter the product details to add it to your inventory.</p>
+
+    <form class="product-form"
+          action="{{ url_for('add_product') }}"
+          method="POST">
+
+        <div class="form-field">
+            <label for="name">Product name</label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                maxlength="100"
+                placeholder="e.g. Wireless Keyboard"
+                required>
+        </div>
+
+        <div class="form-field">
+            <label for="category">Category</label>
+            <input
+                type="text"
+                id="category"
+                name="category"
+                maxlength="100"
+                placeholder="e.g. Accessories"
+                required>
+        </div>
+
+        <div class="form-field">
+            <label for="quantity">Quantity</label>
+            <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                min="0"
+                step="1"
+                placeholder="e.g. 15"
+                required>
+        </div>
+
+        <div class="form-field">
+            <label for="reorder_level">Reorder level</label>
+            <input
+                type="number"
+                id="reorder_level"
+                name="reorder_level"
+                min="0"
+                step="1"
+                placeholder="e.g. 5"
+                required>
+        </div>
+
+        <button class="add-button" type="submit">
+            + Add product
+        </button>
+    </form>
+</div>
+
+<div class="inventory-filters">
+    <div class="form-field">
+        <label for="productSearch">Search inventory</label>
+        <input
+            type="search"
+            id="productSearch"
+            placeholder="Search name or category...">
+    </div>
+
+    <div class="form-field">
+        <label for="statusFilter">Filter by status</label>
+        <select id="statusFilter">
+            <option value="all">All statuses</option>
+            <option value="in stock">In Stock</option>
+            <option value="low stock">Low Stock</option>
+            <option value="out of stock">Out of Stock</option>
+        </select>
+    </div>
+</div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PRODUCT</th>
+                            <th>CATEGORY</th>
+                            <th>QUANTITY</th>
+                            <th>REORDER LEVEL</th>
+                            <th>STATUS</th>
+                            <th>RISK LEVEL</th>
+                            <th>RISK SCORE</th>
+                            <th>SUGGESTED RESTOCK</th>
+                            <th>ACTIONS</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr
+                            class="product-row"
+                            data-name="{{ product.name|lower }}"
+                            data-category="{{ product.category|lower }}"
+                            data-status="{{ product.status|lower }}">
+                            <td class="product-name">{{ product.name }}</td>
+                            <td>{{ product.category }}</td>
+                            <td class="quantity">{{ product.quantity }}</td>
+                            <td>{{ product.reorder_level }}</td>
+                            
+
+<td>
+    <span class="status {{ product.status|lower|replace(' ', '-') }}">
+        {{ product.status }}
+    </span>
+</td>
+
+<td>
+    <span class="risk-badge risk-{{ product.risk_level|lower }}">
+        {{ product.risk_level }}
+    </span>
+</td>
+
+<td class="quantity">
+    {{ product.risk_score }}/100
+</td>
+
+<td class="quantity">
+    {{ product.suggested_restock }} units
+</td>
+
+<td>
+    <div class="action-controls">
+        <a class="edit-button"
+           href="{{ url_for('edit_product', product_id=product.id) }}">
+            Edit
+        </a>
+
+        <form
+            action="{{ url_for('delete_product', product_id=product.id) }}"
+            method="POST"
+            onsubmit="return confirm('Are you sure you want to delete this product?');">
+
+            <button class="delete-button" type="submit">
+                Delete
+            </button>
+        </form>
+    </div>
+</td>
+
+
+                        </tr>
+                        {% endfor %}
+                        <tr id="noResults" hidden>
+    <td colspan="9">No matching products found.</td>
+</tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="demo-note">
+    Risk scores are calculated from current stock levels and reorder
+    thresholds. Suggested restock quantities use a target of twice
+    the reorder level.
+</p>
+        </section>
+    </main>
+
+<script>
+    const searchInput = document.getElementById("productSearch");
+    const statusFilter = document.getElementById("statusFilter");
+    const productRows = document.querySelectorAll(".product-row");
+    const noResults = document.getElementById("noResults");
+
+    function filterProducts() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
+        let visibleCount = 0;
+
+        productRows.forEach((row) => {
+            const searchableText =
+                row.dataset.name + " " + row.dataset.category;
+
+            const matchesSearch = searchableText.includes(searchTerm);
+
+            const matchesStatus =
+                selectedStatus === "all" ||
+                row.dataset.status === selectedStatus;
+
+            const isVisible = matchesSearch && matchesStatus;
+
+            row.hidden = !isVisible;
+
+            if (isVisible) {
+                visibleCount++;
+            }
+        });
+
+        noResults.hidden = visibleCount > 0;
+    }
+
+    searchInput.addEventListener("input", filterProducts);
+    statusFilter.addEventListener("change", filterProducts);
+</script>
+
+</body>
+</html>

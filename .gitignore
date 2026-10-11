@@ -1,0 +1,27 @@
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment variables
+.env
+
+# Local databases and database backups
+stockguard.db
+stockguard.db-*
+*.sqlite
+*.sqlite3
+
+# Testing and log files
+.pytest_cache/
+.coverage
+*.log
+
+# Operating system files
+Thumbs.db
+.DS_Store

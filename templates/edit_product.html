@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product | StockGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-icon">S</span>
+            <span>StockGuard</span>
+        </a>
+        <span class="topbar-label">INVENTORY MANAGEMENT</span>
+    </header>
+
+    <main class="container">
+        <p class="eyebrow">INVENTORY MANAGEMENT</p>
+        <h1>Edit Product</h1>
+        <p class="subtitle">
+            Update the product information and save your changes.
+        </p>
+
+        <section class="edit-card">
+            <form method="POST" class="edit-form">
+                <div class="form-field">
+                    <label for="name">Product name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        maxlength="100"
+                        value="{{ product.name }}"
+                        required>
+                </div>
+
+                <div class="form-field">
+                    <label for="category">Category</label>
+                    <input
+                        type="text"
+                        id="category"
+                        name="category"
+                        maxlength="100"
+                        value="{{ product.category }}"
+                        required>
+                </div>
+
+                <div class="form-field">
+                    <label for="quantity">Quantity</label>
+                    <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        min="0"
+                        step="1"
+                        value="{{ product.quantity }}"
+                        required>
+                </div>
+
+                <div class="form-field">
+                    <label for="reorder_level">Reorder level</label>
+                    <input
+                        type="number"
+                        id="reorder_level"
+                        name="reorder_level"
+                        min="0"
+                        step="1"
+                        value="{{ product.reorder_level }}"
+                        required>
+                </div>
+
+                <div class="edit-actions">
+                    <button class="add-button" type="submit">
+                        Save changes
+                    </button>
+                    <a class="cancel-button" href="/">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
