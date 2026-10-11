@@ -592,3 +592,28 @@ td {
         align-items: flex-start;
     }
 }
+
+.flash-messages {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.flash-message {
+    padding: 12px 15px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.flash-error {
+    background: #fde8e8;
+    border-color: #f4bcbc;
+    color: #9e2d2d;
+}
+
+.flash-success {
+    background: #e6f7ef;
+    border-color: #b6e6cc;
+    color: #176b48;
+}

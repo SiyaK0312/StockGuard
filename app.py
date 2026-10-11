@@ -1,10 +1,13 @@
-
+import os
 import sqlite3
 from pathlib import Path
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
-
+app.config["SECRET_KEY"] = os.environ.get(
+    "SECRET_KEY",
+    "local-development-only-change-before-deployment"
+)
 # Store the database file inside the StockGuard project folder.
 DATABASE = Path(app.root_path) / "stockguard.db"
 
@@ -145,18 +148,24 @@ def add_product():
     name = request.form.get("name", "").strip()
     category = request.form.get("category", "").strip()
 
+    
+    
     try:
         quantity = int(request.form.get("quantity", ""))
         reorder_level = int(request.form.get("reorder_level", ""))
     except ValueError:
-        return "Quantity and reorder level must be whole numbers.", 400
+        flash("Quantity and reorder level must be whole numbers.", "error")
+        return redirect(url_for("home"))
 
-    # Validate the submitted information.
     if not name or not category:
-        return "Product name and category are required.", 400
+        flash("Product name and category are required.", "error")
+        return redirect(url_for("home"))
 
     if quantity < 0 or reorder_level < 0:
-        return "Quantities cannot be negative.", 400
+        flash("Quantities cannot be negative.", "error")
+        return redirect(url_for("home"))
+
+
 
     # Save the new product to SQLite.
     connection = sqlite3.connect(DATABASE)
@@ -176,6 +185,7 @@ def add_product():
     # Return to the dashboard after saving.
     return redirect(url_for("home"))
 
+
 @app.route("/add-product", methods=["POST"])
 def add_product():
     name = request.form.get("name", "").strip()
@@ -183,17 +193,18 @@ def add_product():
 
     try:
         quantity = int(request.form.get("quantity", ""))
-        reorder_level = int(
-            request.form.get("reorder_level", "")
-        )
+        reorder_level = int(request.form.get("reorder_level", ""))
     except ValueError:
-        return "Quantity and reorder level must be whole numbers.", 400
+        flash("Quantity and reorder level must be whole numbers.", "error")
+        return redirect(url_for("home"))
 
     if not name or not category:
-        return "Product name and category are required.", 400
+        flash("Product name and category are required.", "error")
+        return redirect(url_for("home"))
 
     if quantity < 0 or reorder_level < 0:
-        return "Quantities cannot be negative.", 400
+        flash("Quantities cannot be negative.", "error")
+        return redirect(url_for("home"))
 
     connection = sqlite3.connect(DATABASE)
 
@@ -208,7 +219,9 @@ def add_product():
     finally:
         connection.close()
 
+    flash("Product added successfully.", "success")
     return redirect(url_for("home"))
+
 
 @app.route("/edit-product/<int:product_id>", methods=["GET", "POST"])
 def edit_product(product_id):
@@ -220,19 +233,36 @@ def edit_product(product_id):
             name = request.form.get("name", "").strip()
             category = request.form.get("category", "").strip()
 
+            
             try:
                 quantity = int(request.form.get("quantity", ""))
                 reorder_level = int(
                     request.form.get("reorder_level", "")
                 )
             except ValueError:
-                return "Quantity and reorder level must be whole numbers.", 400
+                flash(
+                    "Quantity and reorder level must be whole numbers.",
+                    "error"
+                )
+                return redirect(
+                    url_for("edit_product", product_id=product_id)
+                )
 
             if not name or not category:
-                return "Product name and category are required.", 400
+                flash(
+                    "Product name and category are required.",
+                    "error"
+                )
+                return redirect(
+                    url_for("edit_product", product_id=product_id)
+                )
 
             if quantity < 0 or reorder_level < 0:
-                return "Quantities cannot be negative.", 400
+                flash("Quantities cannot be negative.", "error")
+                return redirect(
+                    url_for("edit_product", product_id=product_id)
+                )
+
 
             cursor = connection.execute("""
                 UPDATE products
@@ -244,7 +274,7 @@ def edit_product(product_id):
 
             if cursor.rowcount == 0:
                 return "Product not found.", 404
-
+            flash("Product updated successfully.", "success")
             return redirect(url_for("home"))
 
         product = connection.execute("""
@@ -281,7 +311,7 @@ def delete_product(product_id):
 
     finally:
         connection.close()
-
+    flash("Product deleted successfully.", "success")
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
