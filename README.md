@@ -1,19 +1,30 @@
-
 # StockGuard
 
-StockGuard is an inventory management and risk-monitoring web application built with Python, Flask, and SQLite. It helps users track products, identify low-stock inventory, and calculate suggested restock quantities.
+**StockGuard** is an inventory management and stock-risk monitoring web application built with Python and Flask. It helps users manage inventory, identify products that need replenishment, and calculate rule-based stock risk scores and suggested restock quantities.
+
+**Live Demo:** [Open StockGuard](https://stockguard-si.onrender.com/)
+
+**Source Code:** [GitHub Repository](https://github.com/SiyaK0312/StockGuard)
+
+## Dashboard Preview
+
+![StockGuard inventory dashboard](screenshots/stockguard-dashboard.png)
+
+![StockGuard inventory dashboard screenshot](screenshots/stockguard-dashboard2.png)
 
 ## Features
 
-- **Inventory dashboard:** View products and summary statistics.
+- **Inventory dashboard:** View products, inventory totals, low-stock counts, and out-of-stock counts.
 - **Product management:** Add, edit, and delete inventory records.
-- **Persistent storage:** Save products in an SQLite database.
-- **Stock status monitoring:** Identify products that are in stock, low on stock, or out of stock.
-- **Risk scoring:** Calculate a rule-based stock risk score from 0 to 100.
-- **Restock recommendations:** Calculate suggested quantities using configurable stock thresholds.
-- **Stock alerts:** Highlight products that need replenishment.
-- **Search and filtering:** Find products by name or category and filter by stock status.
-- **Automated tests:** Test key application routes and validation behaviour.
+- **SQLite database:** Store product names, categories, quantities, and reorder levels.
+- **Stock status monitoring:** Classify products as In Stock, Low Stock, or Out of Stock.
+- **Risk scoring:** Calculate a risk score from 0 to 100 using predefined stock-level rules.
+- **Risk classification:** Assign Low, Moderate, High, or Critical risk levels.
+- **Restock recommendations:** Calculate suggested replenishment quantities based on target stock levels.
+- **Stock alerts:** Highlight products that need attention.
+- **Search and filtering:** Search by product name or category and filter by stock status.
+- **Input validation:** Reject invalid quantities and missing required fields, with user-friendly feedback.
+- **Automated testing:** Test important routes, inventory operations, and validation behaviour.
 
 ## Technology Stack
 
@@ -24,60 +35,116 @@ StockGuard is an inventory management and risk-monitoring web application built 
 - CSS
 - JavaScript
 - Jinja templates
+- Gunicorn
 - Python `unittest`
+- Git and GitHub
+- Render
+
+## How Stock Risk Is Calculated
+
+StockGuard uses transparent, rule-based calculations rather than a machine-learning model.
+
+- **In Stock:** Quantity is greater than the reorder level. The risk score is 0.
+- **Low Stock:** Quantity is above zero but at or below the reorder level. The risk score increases as the available quantity falls further below the threshold.
+- **Out of Stock:** Quantity is zero. The risk score is 100 and the risk level is Critical.
+
+For low-stock products, the score is calculated from the difference between the current quantity and reorder level. Scores of 60 or above are classified as High; lower low-stock scores are classified as Moderate.
+
+Suggested restock quantities use a target of twice the reorder level, with a minimum target of one unit above the reorder level. The recommendation is the difference between this target and the current quantity, or zero if no replenishment is needed.
+
+These rules are illustrative and can be extended with sales history, demand forecasting, and supplier lead times.
 
 ## Getting Started
 
 ### Prerequisites
 
-Install Python 3 and ensure the `py` command works in your terminal.
+- Python 3
+- Git
 
 ### Installation
 
-1. Clone or download this repository.
-2. Open a terminal in the StockGuard project directory.
-3. Install the dependencies:
+Clone the repository and enter the project directory:
 
-   ```powershell
-   py -m pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/SiyaK0312/StockGuard.git
+cd StockGuard
+```
 
-### Run the application
+Create and activate a virtual environment on Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the dependencies:
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+### Run Locally
+
+Start the application:
 
 ```powershell
 py app.py
 ```
 
-Open the following address in your browser:
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
-http://127.0.0.1:5000
+StockGuard creates its SQLite database and adds demonstration products when the database is empty.
 
-The application creates its SQLite database and inserts demonstration products when the database is empty.
+### Run the Automated Tests
 
-## Running the Tests
-
-Run the automated test suite from the project directory:
+Run the test suite from the project directory:
 
 ```powershell
 py -m unittest -v test_app
 ```
 
-The tests use a temporary database so they do not need to modify the application's local inventory database.
+The test suite uses a temporary database so that tests do not need to modify the local inventory database.
 
-## How Risk Monitoring Works
+## Deployment
 
-StockGuard assigns stock statuses using each product's quantity and reorder level.
+StockGuard is deployed as a Flask web service on Render.
 
-- **In Stock:** Quantity is above the reorder level.
-- **Low Stock:** Quantity is greater than zero but at or below the reorder level.
-- **Out of Stock:** Quantity is zero.
+The hosted demo uses Gunicorn and the `wsgi.py` entry point. The deployment configuration is maintained separately from the local development command.
 
-Risk scores are rule-based calculations, not predictions from a machine-learning model. Suggested restock quantities use a target of twice the reorder level, with a minimum target above the reorder threshold.
+**Demo limitations:** The free Render web service may spin down after inactivity, so the first request after a period of inactivity may take longer to respond. Its filesystem is ephemeral, meaning the local SQLite database can be reset after a restart, spin-down, or redeployment. This deployment is intended for portfolio demonstration, not for storing real or sensitive inventory data.
 
-These rules are intended as a starting point and can be improved as the application develops.
+For persistent hosted inventory, the application would need a suitable persistent database configuration, such as a managed PostgreSQL database.
 
-## Project Status
+See the [Render documentation on free instances](https://render.com/docs/free) for further details.
 
-StockGuard is an actively developed portfolio project. The current version demonstrates inventory CRUD operations, database persistence, stock risk calculations, dashboard alerts, client-side search and filtering, and automated testing.
+## Project Structure
 
-The application currently runs as a local development server and is not configured for production deployment.
+```text
+StockGuard/
+├── screenshots/
+│   ├── stockguard-dashboard.png
+│   └── stockguard-dashboard2.png
+├── static/
+│   └── style.css
+├── templates/
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── edit_product.html
+│   └── index.html
+├── .gitignore
+├── app.py
+├── requirements.txt
+├── test_app.py
+├── wsgi.py
+└── README.md
+```
+
+## What This Project Demonstrates
+
+StockGuard demonstrates practical experience with Python web development, Flask routing, relational database operations, server-side validation, dynamic HTML templates, client-side search and filtering, rule-based business logic, automated testing, Git version control, and web deployment.
+
+It is a portfolio project designed to demonstrate the development of a working application from local implementation through testing and deployment.
+
+## Future Improvements
+
+Potential improvements include persistent hosted database storage, user authentication and role-based permissions, stock movement history, configurable risk rules, and more advanced inventory analytics.
